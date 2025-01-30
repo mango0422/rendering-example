@@ -1,69 +1,16 @@
-"use client";
+import CSR from "./csr";
+import SSR from "./ssr";
+import { LoadingTimeProvider } from "./context"; // ✅ Context 적용
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+const IMAGE_URL = "https://fastly.picsum.photos/id/441/200/300.jpg?hmac=QKMN_HV9XLlzyUWdanPyq2Qz8FJmYYH5Q0CjPACcnsI";
 
-export default function CompareCSRvsSSR() {
-  const [csrData, setCSRData] = useState<string | null>(null);
-  const [csrLoadingTime, setCSRLoadingTime] = useState<number | null>(null);
-
-  useEffect(() => {
-    const startTime = Date.now();
-
-    setTimeout(() => {
-      fetch("https://picsum.photos/200/300?random=1")
-        .then((res) => res.blob())
-        .then((blob) => {
-          setCSRData(URL.createObjectURL(blob));
-          setCSRLoadingTime(Date.now() - startTime);
-        });
-    }, 5000);
-  }, []);
-
+export default async function CompareCSRvsSSR() {
   return (
-    <div className="grid grid-cols-2 gap-4 p-8">
-      <div className="border p-4">
-        <h2>📢 CSR (Client-Side Rendering)</h2>
-        {csrLoadingTime && <p>⏳ 로딩 시간: {csrLoadingTime}ms</p>}
-        {!csrData ? (
-          <p className="animate-pulse">Loading...</p>
-        ) : (
-          <Image src={csrData} alt="CSR Image" width={200} height={300} />
-        )}
+    <LoadingTimeProvider> {/* ✅ Context 적용하여 공통 startTime 제공 */}
+      <div className="grid grid-cols-2 gap-4 p-8">
+        <CSR imageUrl={IMAGE_URL} />
+        <SSR imageUrl={IMAGE_URL} />
       </div>
-
-      <div className="border p-4">
-        <h2>📢 SSR (Server-Side Rendering)</h2>
-        <SSR image={'https://picsum.photos/200/300'} loadingTime={0} />
-      </div>
-    </div>
-  );
-}
-
-export async function getServerSideProps() {
-  const startTime = Date.now();
-  const res = await fetch("https://picsum.photos/200/300?random=2");
-  const buffer = await res.arrayBuffer();
-  const loadingTime = Date.now() - startTime;
-
-  return {
-    props: {
-      image: `data:image/jpeg;base64,${Buffer.from(buffer).toString("base64")}`,
-      loadingTime,
-    },
-  };
-}
-
-interface SSRProps {
-  image: string;
-  loadingTime: number;
-}
-
-function SSR({ image, loadingTime }: SSRProps) {
-  return (
-    <>
-      <p>⏳ 로딩 시간: {loadingTime}ms</p>
-      <Image src={image} alt="SSR Image" width={200} height={300} />
-    </>
+    </LoadingTimeProvider>
   );
 }

@@ -5,16 +5,11 @@ const nextConfig: NextConfig = {
   experimental: {
     ppr: 'incremental',
   },
-};
-
-export default nextConfig;
-
-module.exports = {
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.placeholder.com',
+        hostname: 'fastly.picsum.photos',
         port: '',
         pathname: '/**',
         search: '',
@@ -22,3 +17,5 @@ module.exports = {
     ],
   },
 };
+
+export default nextConfig;
